@@ -5,3 +5,5 @@ if x == "+"
 	print(a+b)
 if x == "-"
 	print(a-b)
+if x == "*"
+	print(a*b)
