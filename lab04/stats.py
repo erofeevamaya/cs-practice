@@ -39,9 +39,35 @@ def read_valid(lines: list[str]) -> list[dict]:
 
 def average_by_city(records: list[dict]) -> dict:
     """Средняя температура по каждому городу, округлённая до десятых."""
-    pass
+    total = {}
+    count = {}
+
+    for rec in records:
+        city = rec["city"]
+        total[city] = total.get(city, 0) + rec["temperature"]
+        count[city] = count.get(city, 0) + 1
+
+    averages = {}
+    for city in total:
+        averages[city] = round(total[city] / count[city], 1)
+    return averages
 
 
 def warmest_city(records: list[dict]) -> str:
-    """Город с наибольшей средней температурой."""
-    pass
+    """Город с наибольшей средней температурой.
+
+    При равенстве — первый по алфавиту.
+    """
+    if not records:
+        raise ValueError("Нет записей для анализа")
+
+    averages = average_by_city(records)
+
+    best_city = None
+    best_temp = None
+    for city in sorted(averages):
+        temp = averages[city]
+        if best_temp is None or temp > best_temp:
+            best_temp = temp
+            best_city = city
+    return best_city
