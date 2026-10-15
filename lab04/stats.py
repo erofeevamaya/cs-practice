@@ -13,10 +13,18 @@ def parse_record(line: str) -> dict:
 
     city, temp_str, date = parts
 
-    if city.strip() == "":
+    # Убираем пробелы вокруг значений
+    city = city.strip()
+    temp_str = temp_str.strip()
+    date = date.strip()
+
+    if city == "":
         raise ValueError(f"Пустое название города: {line!r}")
-    if date.strip() == "":
+    if date == "":
         raise ValueError(f"Пустая дата: {line!r}")
+
+    # Принимаем и точку, и запятую как десятичный разделитель
+    temp_str = temp_str.replace(",", ".")
 
     try:
         temperature = float(temp_str)
