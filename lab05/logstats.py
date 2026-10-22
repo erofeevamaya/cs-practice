@@ -7,26 +7,31 @@ def parse_event(line: str) -> dict:
     """Разбирает строку журнала в словарь.
 
     Ожидаемый формат: «время уровень сообщение».
-    Сообщение может содержать пробелы, поэтому строка делится
-    не более чем на три части.
-
-    :param line: строка журнала
-    :return: {"time": ..., "level": ..., "message": ...}
-    :raises ValueError: если строка пустая, содержит меньше трёх
-        частей или уровень незнакомый
     """
+    # 1. Проверяем, что строка не пустая
     if not line or not line.strip():
         raise ValueError("пустая строка")
 
-    parts = line.rstrip("\n").split(" ", 2)
+    # 2. Убираем пробелы и перевод строки с обоих концов!
+    clean_line = line.strip()
 
-    if len(parts) < 3:
-        raise ValueError(f"недостаточно частей: {line!r}")
+    # 3. Разбиваем на максимум 3 части
+    parts = clean_line.split(" ", 2)
 
+    # 4. Проверяем, что частей ровно 3 (время, уровень, сообщение)
+    if len(parts) != 3:
+        raise ValueError(f"неверный формат строки: {line!r}")
+
+    # 5. Разбираем части
     time, level, message = parts
 
+    # 6. Строгая проверка: уровень должен быть из списка, 
+    # а сообщение не должно быть пустым (например, если в конце были одни пробелы)
     if level not in LEVELS:
         raise ValueError(f"незнакомый уровень: {level!r}")
+        
+    if not message:
+        raise ValueError(f"пустое сообщение: {line!r}")
 
     return {"time": time, "level": level, "message": message}
 
