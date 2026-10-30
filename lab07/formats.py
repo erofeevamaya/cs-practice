@@ -4,21 +4,19 @@ import json
 
 
 def csv_to_records(text: str) -> list[dict]:
-    """Разбирает CSV с заголовком в список словарей.
-
-    Значения остаются строками. Разделитель — запятая,
-    первая непустая строка — заголовок.
-    """
+    """Разбирает CSV с заголовком в список словарей."""
     lines = text.splitlines()
-    # Отбрасываем пустые строки (например, хвостовой перевод строки)
     lines = [line for line in lines if line.strip() != ""]
     if not lines:
         return []
 
-    header = lines[0].split(",")
+    # Очищаем заголовки от пробелов по краям
+    header = [h.strip() for h in lines[0].split(",")]
+    
     records = []
     for line in lines[1:]:
-        values = line.split(",")
+        # Очищаем значения от пробелов по краям
+        values = [v.strip() for v in line.split(",")]
         records.append(dict(zip(header, values)))
     return records
 
@@ -33,32 +31,28 @@ def _parse_scalar(value: str):
         return True
     if lowered in ("false", "no"):
         return False
-    # Числа: сначала пробуем целое, потом дробное
+    
+    # Заменяем запятую на точку для корректного парсинга дробных чисел
+    # (например, "3,5" -> "3.5")
+    value_for_number = value.replace(",", ".")
+    
     try:
-        return int(value)
+        return int(value_for_number)
     except ValueError:
         pass
     try:
-        return float(value)
+        return float(value_for_number)
     except ValueError:
         pass
     return value
 
 
 def parse_settings(lines: list[str]) -> dict:
-    """Разбирает учебное подмножество YAML в словарь.
-
-    Поддерживает:
-      * комментарии после #;
-      * пары «ключ: значение» с приведением типов;
-      * списки: «ключ:» без значения и элементы «- значение».
-    Вложенность не поддерживается.
-    """
+    """Разбирает учебное подмножество YAML в словарь."""
     result: dict = {}
-    current_list_key = None  # ключ, для которого сейчас собирается список
+    current_list_key = None
 
     for raw_line in lines:
-        # Убираем комментарий (всё после #)
         line = raw_line.split("#", 1)[0]
         if line.strip() == "":
             continue
@@ -83,7 +77,6 @@ def parse_settings(lines: list[str]) -> dict:
             value = value.strip()
 
             if value == "":
-                # Открывается список
                 result[key] = []
                 current_list_key = key
             else:
@@ -94,17 +87,12 @@ def parse_settings(lines: list[str]) -> dict:
 
 
 def merge_by_key(rows: list[dict], extra: dict, key: str = "id") -> list[dict]:
-    """Дополняет записи сведениями из справочника extra по значению ключа key.
-
-    Поля самой записи важнее: при конфликте остаётся значение из записи.
-    Записи без пары в справочнике остаются как есть.
-    """
+    """Дополняет записи сведениями из справочника extra по значению ключа key."""
     merged = []
     for row in rows:
-        new_row = dict(row)  # копия, чтобы не мутировать исходные данные
+        new_row = dict(row)
         row_key = str(row.get(key))
         if row_key in extra:
-            # Поля справочника добавляем, но не перезаписываем существующие
             for field, value in extra[row_key].items():
                 if field not in new_row:
                     new_row[field] = value
