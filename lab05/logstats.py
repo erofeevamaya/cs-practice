@@ -4,49 +4,27 @@ LEVELS = {"DEBUG", "INFO", "WARNING", "ERROR"}
 
 
 def parse_event(line: str) -> dict:
-    """Разбирает строку журнала в словарь.
-    
-    Ожидаемый формат: «время уровень сообщение».
-    """
-    # 1. Проверяем, что строка не пустая (и не состоит из одних пробелов)
-    if not line or not line.strip():
+        if not line or not line.strip():
         raise ValueError("пустая строка")
 
-    # 2. Разбиваем строку по пробелам, но не более 3 частей.
-    # Метод .split(" ") разобьет " a b" на ['', 'a', 'b'], а нам это не нужно.
-    # Но если использовать .strip() перед разбиением, пробел в начале исчезнет.
-    # Нам нужно оставить сообщение целым, поэтому идём на хитрость:
-    
-    clean_line = line.strip() # убираем пробелы по краям (в начале и в конце)
-    
-    # Теперь разбиваем максимум на 3 части по пробелу
+        
+    clean_line = line.strip() 
     parts = clean_line.split(" ", 2)
 
-    # 3. В строке ОБЯЗАТЕЛЬНО должно быть 3 части: время, уровень, сообщение
-    # Если частей меньше (например, "время W)"), мы не сможем найти уровень и сообщение.
+   ообщение.
     if len(parts) < 3:
         raise ValueError(f"недостаточно частей в строке: {line!r}")
 
-    # 4. Распаковываем части
     time, level, message = parts
 
-    # 5. Проверяем, что уровень — из разрешенного списка
     if level not in LEVELS:
         raise ValueError(f"незнакомый уровень: {level!r}")
 
-    # 6. Возвращаем словарь
-    return {"time": time, "level": level, "message": message}
+    # 6. Возвращаемreturn {"time": time, "level": level, "message": message}
 
 
 def count_levels(lines) -> dict:
-    """Считает количество строк каждого уровня.
-
-    Испорченные строки считаются под ключом BROKEN.
-    Пустые строки пропускаются.
-
-    :param lines: последовательность строк (список или открытый файл)
-    :return: словарь {уровень: количество}
-    """
+  
     counts: dict = {}
 
     for line in lines:
@@ -63,14 +41,6 @@ def count_levels(lines) -> dict:
 
 
 def top_errors(lines, n: int) -> list:
-    """Возвращает n самых частых сообщений уровня ERROR.
-
-    При равенстве частот сортировка по алфавиту.
-
-    :param lines: последовательность строк
-    :param n: сколько сообщений вернуть
-    :return: список пар [сообщение, сколько раз]
-    """
     counter: dict = {}
 
     for line in lines:
@@ -90,12 +60,6 @@ def top_errors(lines, n: int) -> list:
 
 
 def format_report(counts: dict, errors: list) -> str:
-    """Формирует текст отчёта.
-
-    :param counts: словарь {уровень: количество}
-    :param errors: список пар [сообщение, сколько раз]
-    :return: текст отчёта, заканчивающийся переводом строки
-    """
     lines_out = ["Отчёт по журналу", ""]
 
     for level in sorted(counts):
